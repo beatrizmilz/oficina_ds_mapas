@@ -1,0 +1,124 @@
+---
+title: "Mapas com ggplot2"
+author: "Beatriz & Curso-R"
+date: '2022-06-13'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Carregar os pacotes
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(geobr)
+library(httr)
+library(janitor)
+library(readxl)
+library(leaflet)
+
+# instalar pacotes do CRAN
+pacotes_cran <- c("ggplot2", "dplyr", "httr", "janitor", "leaflet", "readxl", "sf")
+install.packages(pacotes_cran)
+
+# instalar geobr
+devtools::install_github("ipeaGIT/geobr", subdir = "r-package")
+
+```
+
+## Download dos dados
+
+```{r}
+# # URL para baixar a base atualizada
+# url_request <- "https://app.anm.gov.br/SIGBM/Publico/ClassificacaoNacionalDaBarragem/ExportarExcel"
+# 
+# # fazer download da base mais atual
+# httr::POST(url_request, httr::write_disk("dados/sigbm.xlsx"))
+```
+
+
+## Importar os dados brutos
+
+```{r}
+sigbm_bruto <- readxl::read_xlsx("dados/sigbm.xlsx", skip = 4) 
+```
+
+
+## Organização dos dados
+
+
+```{r}
+sigbm <- sigbm_bruto |> 
+  janitor::clean_names() |> 
+  dplyr::mutate(lat = parzer::parse_lat(latitude),
+                long = parzer::parse_lon(longitude))
+```
+
+
+## Objetivo 1: praticando com ggplot2
+
+- Fazer um mapa temático do brasil, onde represente a quantidade de barragens em cada estado brasileiro.
+
+- Pensar: vamos usar linhas, pontos, ou polígonos?
+
+- Fazer a contagem com a base que temos!
+
+```{r}
+quantidade_por_uf <- sigbm |> 
+  dplyr::count(uf, name = "qtd_barragens")
+```
+
+- Buscar a base de polígono dos estados:
+
+```{r}
+br_estados <- geobr::read_state()
+
+glimpse(br_estados)
+```
+
+- Unir as bases!
+
+```{r}
+tabela_dados_com_uf <- br_estados |> 
+  dplyr::left_join(quantidade_por_uf, 
+                   by = c("abbrev_state" = "uf"))
+
+dplyr::glimpse(tabela_dados_com_uf)
+
+```
+Criando um mapa simples:
+```{r}
+tabela_dados_com_uf |> 
+  ggplot() +
+  geom_sf(aes(fill = qtd_barragens))
+```
+
+Complementando o gráfico: 
+
+```{r}
+tabela_dados_com_uf |> 
+  #dplyr::mutate(qtd_barragens = tidyr::replace_na(qtd_barragens, 0)) |> 
+  ggplot() +
+  geom_sf(aes(fill = qtd_barragens)) +
+  scale_fill_viridis_c() +
+  labs(fill = "Quantidade de\nBarragens",
+       title = "Quantidade de barragens de mineração por estado no Brasil",
+       caption = "Dados obtidos no SIGBM em 13/06/2022.") +
+  theme_light() 
+  
+```
+
+
+## Objetivo 2: Mapa de pontos
+
+```{r}
+sigbm |>
+  leaflet::leaflet() |>
+  leaflet::addProviderTiles("Esri.WorldImagery") |>
+  leaflet::addMarkers( ~ long, ~ lat,
+                       clusterOptions = leaflet::markerClusterOptions())
+```
+
