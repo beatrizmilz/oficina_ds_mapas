@@ -1,0 +1,76 @@
+---
+title: "Untitled"
+author: "Curso-R"
+date: '2022-06-15'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+```
+
+```{r}
+readr::guess_encoding("Apendice-J-Dados-de-saneamento-por-municipio-–-2020.csv")
+
+library(readr)
+dados_brutos <- read_csv("Apendice-J-Dados-de-saneamento-por-municipio-–-2020.csv", 
+                                                                  col_names = c(
+      # define o nome das colunas
+      "ugrhi",
+      "municipio",
+      "concessao",
+      "pop_urbana",
+      "atendimento_coleta_porc",
+      "atendimento_tratamento_porc",
+      "eficiencia",
+      "carga_poluidora_potencial",
+      "carga_poluidora_remancescente",
+      "ictem",
+      "corpo_receptor"
+    ),
+    locale = locale(decimal_mark = ",", grouping_mark = "."), 
+    skip = 3)
+```
+
+
+```{r}
+dados <- dados_brutos |>
+  dplyr::filter(municipio != "Qualidade das Águas Interiores no Estado de São Paulo",
+                ugrhi != "Apêndice") |> 
+  dplyr::mutate(dplyr::across(c(pop_urbana:eficiencia), ~readr::parse_double(x = .x, locale = readr::locale(decimal_mark = ",", grouping_mark = ".")) ))
+
+  
+
+dados_com_ibge <- dados |> 
+  # Esse dá pra adicionar no MUNIFACIL
+  dplyr::mutate(municipio = dplyr::if_else(municipio == "Santa Rita do PassaQuatro", "Santa Rita do Passa Quatro", municipio)) |> 
+  # Esse acho que é erro de encoding
+  dplyr::mutate(municipio = dplyr::if_else(municipio == "SanAtor aAcnatnôgnuiáo do", "Santo Antônio do Aracanguá", municipio)) |>   
+  munifacil::limpar_colunas(col_muni = municipio, col_uf = "SP") |> 
+  munifacil::incluir_codigo_ibge()
+```
+
+```{r}
+dados_com_ibge
+names(dados_com_ibge)
+
+municipios_sp <- geobr::read_municipality("SP")
+municipios_sp_arrumado <- municipios_sp |> dplyr::mutate(
+  code_muni = as.character(code_muni)
+)
+names(municipios_sp)
+
+dados_geo <- dplyr::full_join(municipios_sp_arrumado, dados_com_ibge, by = c("code_muni" = "id_municipio") )
+
+```
+
+
+
+```{r}
+dados_geo |> dplyr::glimpse()
+dados_geo |> 
+  ggplot()+
+  geom_sf(aes(fill = atendimento_coleta_porc))
+```
+

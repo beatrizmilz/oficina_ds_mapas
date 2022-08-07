@@ -100,7 +100,6 @@ Complementando o gráfico:
 
 ```{r}
 tabela_dados_com_uf |> 
-  #dplyr::mutate(qtd_barragens = tidyr::replace_na(qtd_barragens, 0)) |> 
   ggplot() +
   geom_sf(aes(fill = qtd_barragens)) +
   scale_fill_viridis_c() +
