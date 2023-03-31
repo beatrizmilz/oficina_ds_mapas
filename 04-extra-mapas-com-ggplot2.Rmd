@@ -71,7 +71,7 @@ Não usar View()!
 
 a) Todos os estados do Brasil
 ```{r}
-estados <- readr::read_rds("../dados/geobr/estados.Rds")
+estados <- readr::read_rds("dados/geobr/estados.Rds")
 
 # Como obter essa mesma base?
 # estados <- geobr::read_state()
@@ -81,7 +81,7 @@ estados <- readr::read_rds("../dados/geobr/estados.Rds")
 b) Apenas um estado: DF
 
 ```{r}
-estado_df <- readr::read_rds("../dados/geobr/estado_df.Rds")
+estado_df <- readr::read_rds("dados/geobr/estado_df.Rds")
 
 # Como obter essa mesma base?
 # estado_df <- geobr::read_state("DF")
@@ -176,7 +176,7 @@ library(ggplot2)
 
 a) Escolas em Brasília
 ```{r}
-escolas_brasilia <- readr::read_rds("../dados/geobr/escolas_brasilia.Rds")
+escolas_brasilia <- readr::read_rds("dados/geobr/escolas_brasilia.Rds")
 
 # Como obter essa mesma base?
 # escolas <- geobr::read_schools()
@@ -187,7 +187,7 @@ escolas_brasilia <- readr::read_rds("../dados/geobr/escolas_brasilia.Rds")
 
 b) Delimitação de Brasília
 ```{r}
-municipio_brasilia <- readr::read_rds("../dados/geobr/municipio_brasilia.Rds")
+municipio_brasilia <- readr::read_rds("dados/geobr/municipio_brasilia.Rds")
 
 # Como obter essa mesma base?
 # municipio_brasilia <- geobr::read_municipality(5300108)
@@ -290,7 +290,7 @@ Como buscar a base? Se quiser baixar, remova os comentários (#) dos códigos ab
 Essa base foi gerada a partir do código no chunk anterior.
 
 ```{r}
-rodovias_df <- readr::read_rds("../dados/rodovias_df.Rds")
+rodovias_df <- readr::read_rds("dados/rodovias_df.Rds")
 ```
 
 
